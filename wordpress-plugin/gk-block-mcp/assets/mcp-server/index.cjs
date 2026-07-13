@@ -35217,7 +35217,7 @@ var package_default = {
   type: "module",
   scripts: {
     build: "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --external:supports-color --external:has-flag",
-    postbuild: "bash scripts/copy-server-bundle.sh",
+    postbuild: "bash scripts/copy-server-bundle.sh && ./node_modules/.bin/tsx scripts/export-abilities-manifest.mjs",
     start: "node dist/index.cjs",
     dev: "esbuild src/index.ts --bundle --platform=node --format=cjs --outfile=dist/index.cjs --watch --external:supports-color --external:has-flag",
     inspect: "npx @modelcontextprotocol/inspector node dist/index.cjs",
@@ -35227,6 +35227,7 @@ var package_default = {
     "test:docs": "playwright test --config tests/docs/playwright.config.ts",
     eval: "tsx tests/evals/lib/runner.ts",
     "eval:fixture-refresh": "tsx tests/evals/scripts/fetch-fixture.ts",
+    "export-abilities": "tsx scripts/export-abilities-manifest.mjs",
     prepare: "npm run build",
     prepublishOnly: "npm test"
   },
