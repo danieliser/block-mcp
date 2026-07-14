@@ -1,6 +1,6 @@
 <?php
 /**
- * Executes Block MCP tools by delegating to REST_Controller (and Yoast_Bridge).
+ * Executes Block MCP tools by delegating to REST_Controller (and Yoast_Bridge, Rank_Math_Bridge).
  *
  * Mirrors the npm MCP server's tool handlers: argument normalization, URL
  * resolution, and client-side pagination live here so Abilities return the
@@ -37,12 +37,21 @@ class Tool_Executor {
 	private $yoast_bridge;
 
 	/**
-	 * @param REST_Controller   $controller   REST controller instance.
-	 * @param Yoast_Bridge|null $yoast_bridge Yoast bridge, when available.
+	 * Optional Rank Math SEO bridge (routes register only when Rank Math is active).
+	 *
+	 * @var Rank_Math_Bridge|null
 	 */
-	public function __construct( REST_Controller $controller, ?Yoast_Bridge $yoast_bridge = null ) {
-		$this->controller   = $controller;
-		$this->yoast_bridge = $yoast_bridge;
+	private $rank_math_bridge;
+
+	/**
+	 * @param REST_Controller       $controller       REST controller instance.
+	 * @param Yoast_Bridge|null     $yoast_bridge     Yoast bridge, when available.
+	 * @param Rank_Math_Bridge|null $rank_math_bridge Rank Math bridge, when available.
+	 */
+	public function __construct( REST_Controller $controller, ?Yoast_Bridge $yoast_bridge = null, ?Rank_Math_Bridge $rank_math_bridge = null ) {
+		$this->controller       = $controller;
+		$this->yoast_bridge     = $yoast_bridge;
+		$this->rank_math_bridge = $rank_math_bridge;
 	}
 
 	/**
@@ -106,6 +115,12 @@ class Tool_Executor {
 				return $this->execute_yoast_update_seo( $input );
 			case 'yoast_bulk_update_seo':
 				return $this->execute_yoast_bulk_update_seo( $input );
+			case 'rank_math_get_seo':
+				return $this->execute_rank_math_get_seo( $input );
+			case 'rank_math_update_seo':
+				return $this->execute_rank_math_update_seo( $input );
+			case 'rank_math_bulk_update_seo':
+				return $this->execute_rank_math_bulk_update_seo( $input );
 			default:
 				return new \WP_Error(
 					'unknown_tool',
@@ -813,6 +828,85 @@ class Tool_Executor {
 		$request = new \WP_REST_Request( 'POST', '/' . REST_Controller::NAMESPACE . '/yoast/bulk' );
 		return $this->call_controller(
 			array( $this->yoast_bridge, 'bulk_update_seo' ),
+			$request,
+			array(),
+			array( 'posts' => $input['posts'] )
+		);
+	}
+
+	/**
+	 * @param array<string, mixed> $input Tool input.
+	 * @return array<string, mixed>|\WP_Error
+	 */
+	private function execute_rank_math_get_seo( array $input ) {
+		if ( ! Rank_Math_Bridge::is_rank_math_active() ) {
+			return new \WP_Error(
+				'rank_math_unavailable',
+				__( 'Rank Math is not active on this site.', 'gk-block-mcp' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$post_id = isset( $input['post_id'] ) ? absint( $input['post_id'] ) : 0;
+		if ( $post_id <= 0 ) {
+			return new \WP_Error( 'missing_post_id', __( 'post_id is required.', 'gk-block-mcp' ), array( 'status' => 400 ) );
+		}
+
+		$request = new \WP_REST_Request( 'GET', '/' . REST_Controller::NAMESPACE . '/rank-math/' . $post_id );
+		$request->set_param( 'post_id', $post_id );
+		return $this->call_controller( array( $this->rank_math_bridge, 'get_seo' ), $request );
+	}
+
+	/**
+	 * @param array<string, mixed> $input Tool input.
+	 * @return array<string, mixed>|\WP_Error
+	 */
+	private function execute_rank_math_update_seo( array $input ) {
+		if ( ! Rank_Math_Bridge::is_rank_math_active() ) {
+			return new \WP_Error(
+				'rank_math_unavailable',
+				__( 'Rank Math is not active on this site.', 'gk-block-mcp' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		$post_id = isset( $input['post_id'] ) ? absint( $input['post_id'] ) : 0;
+		if ( $post_id <= 0 ) {
+			return new \WP_Error( 'missing_post_id', __( 'post_id is required.', 'gk-block-mcp' ), array( 'status' => 400 ) );
+		}
+
+		$body = $input;
+		unset( $body['post_id'] );
+
+		$request = new \WP_REST_Request( 'POST', '/' . REST_Controller::NAMESPACE . '/rank-math/' . $post_id );
+		$request->set_param( 'post_id', $post_id );
+		return $this->call_controller( array( $this->rank_math_bridge, 'update_seo' ), $request, array( 'post_id' => $post_id ), $body );
+	}
+
+	/**
+	 * @param array<string, mixed> $input Tool input.
+	 * @return array<string, mixed>|\WP_Error
+	 */
+	private function execute_rank_math_bulk_update_seo( array $input ) {
+		if ( ! Rank_Math_Bridge::is_rank_math_active() ) {
+			return new \WP_Error(
+				'rank_math_unavailable',
+				__( 'Rank Math is not active on this site.', 'gk-block-mcp' ),
+				array( 'status' => 404 )
+			);
+		}
+
+		if ( empty( $input['posts'] ) || ! is_array( $input['posts'] ) ) {
+			return new \WP_Error(
+				'missing_posts',
+				__( 'rank_math_bulk_update_seo: non-empty posts array is required.', 'gk-block-mcp' ),
+				array( 'status' => 400 )
+			);
+		}
+
+		$request = new \WP_REST_Request( 'POST', '/' . REST_Controller::NAMESPACE . '/rank-math/bulk' );
+		return $this->call_controller(
+			array( $this->rank_math_bridge, 'bulk_update_seo' ),
 			$request,
 			array(),
 			array( 'posts' => $input['posts'] )

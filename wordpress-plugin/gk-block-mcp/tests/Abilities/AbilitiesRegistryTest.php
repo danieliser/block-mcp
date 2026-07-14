@@ -31,10 +31,14 @@ class AbilitiesRegistryTest extends RestControllerTestCase {
 		$manifest = $method->invoke( $registry );
 
 		$this->assertIsArray( $manifest );
-		$this->assertCount( 26, $manifest['tools'] );
+		$this->assertCount( 29, $manifest['tools'] );
 		$names = wp_list_pluck( $manifest['tools'], 'name' );
 		$this->assertContains( 'get_page_blocks', $names );
 		$this->assertContains( 'edit_block_tree', $names );
+		$this->assertContains( 'yoast_get_seo', $names );
+		$this->assertContains( 'rank_math_get_seo', $names );
+		$this->assertContains( 'rank_math_update_seo', $names );
+		$this->assertContains( 'rank_math_bulk_update_seo', $names );
 	}
 
 	/**
@@ -71,7 +75,7 @@ class AbilitiesRegistryTest extends RestControllerTestCase {
 		);
 
 		$ids = $registry->get_ability_ids();
-		$this->assertCount( 26, $ids );
+		$this->assertCount( 29, $ids );
 		$this->assertContains( 'gk-block-mcp/get-page-blocks', $ids );
 		$this->assertContains( 'gk-block-mcp/edit-block-tree', $ids );
 	}

@@ -6,6 +6,7 @@
     </php>
     <testsuites>
         <testsuite name="GK Block API">
+            <directory>Abilities</directory>
             <directory>Block</directory>
             <directory>Post</directory>
             <directory>REST</directory>
