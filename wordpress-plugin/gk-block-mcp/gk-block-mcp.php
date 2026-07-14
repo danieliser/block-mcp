@@ -187,6 +187,11 @@ function init_rest_api() {
 		// gk-block-mcp stays self-contained — no mu-plugin or theme dependency.
 		( new Yoast_Bridge() )->register_routes();
 
+		// Rank Math SEO bridge: same pattern as Yoast. Routes only register when
+		// Rank Math is active, giving Rank Math sites the same read/write SEO
+		// surface Yoast sites get.
+		( new Rank_Math_Bridge() )->register_routes();
+
 		// Connector credential-exchange route. Registered here (rest_api_init, NOT
 		// the admin-only settings bootstrap) so it answers the connector's
 		// logged-out POST. REST is used instead of admin-post.php because
@@ -234,6 +239,7 @@ function build_block_services() {
 	return array(
 		'controller' => $controller,
 		'yoast'      => new Yoast_Bridge(),
+		'rank_math'  => new Rank_Math_Bridge(),
 	);
 }
 
@@ -256,7 +262,7 @@ function get_abilities_registry() {
 
 	try {
 		$services = build_block_services();
-		$executor = new Tool_Executor( $services['controller'], $services['yoast'] );
+		$executor = new Tool_Executor( $services['controller'], $services['yoast'], $services['rank_math'] );
 		$registry = new Abilities_Registry( $executor, $services['controller'] );
 	} catch ( \Throwable $e ) {
 		if ( defined( 'WP_DEBUG' ) && defined( 'WP_DEBUG_LOG' ) && WP_DEBUG && WP_DEBUG_LOG ) {

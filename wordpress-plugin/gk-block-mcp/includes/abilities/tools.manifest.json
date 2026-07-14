@@ -1991,6 +1991,177 @@
         "destructive": true,
         "idempotent": false
       }
+    },
+    {
+      "name": "rank_math_get_seo",
+      "ability": "gk-block-mcp/rank-math-get-seo",
+      "label": "Get Rank Math SEO metadata",
+      "description": "Read all Rank Math SEO metadata for a post or page (title, description, focus keyword, canonical, robots, Open Graph, Twitter card, SEO score).",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "post_id": {
+            "type": "number",
+            "description": "WordPress post or page ID."
+          }
+        },
+        "required": [
+          "post_id"
+        ]
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "permission": "read",
+      "annotations": {
+        "readonly": true,
+        "destructive": false,
+        "idempotent": true
+      }
+    },
+    {
+      "name": "rank_math_update_seo",
+      "ability": "gk-block-mcp/rank-math-update-seo",
+      "label": "Update Rank Math SEO metadata",
+      "description": "Update one or more Rank Math SEO fields on a single post or page. Only supplied fields are written; an empty value clears that field.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "post_id": {
+            "type": "number",
+            "description": "WordPress post or page ID."
+          },
+          "title": {
+            "type": "string",
+            "description": "SEO title. Supports Rank Math variables."
+          },
+          "description": {
+            "type": "string",
+            "description": "Meta description."
+          },
+          "focus_keyword": {
+            "type": "string",
+            "description": "Focus keyword(s), comma-separated."
+          },
+          "canonical": {
+            "type": "string",
+            "description": "Canonical URL override."
+          },
+          "robots": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Robots directives, e.g. index, noindex, nofollow, noarchive."
+          },
+          "og_title": {
+            "type": "string",
+            "description": "Open Graph (Facebook) title."
+          },
+          "og_description": {
+            "type": "string",
+            "description": "Open Graph (Facebook) description."
+          },
+          "twitter_title": {
+            "type": "string",
+            "description": "Twitter card title."
+          },
+          "twitter_description": {
+            "type": "string",
+            "description": "Twitter card description."
+          }
+        },
+        "required": [
+          "post_id"
+        ]
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "permission": "edit_post",
+      "annotations": {
+        "readonly": false,
+        "destructive": false,
+        "idempotent": true
+      }
+    },
+    {
+      "name": "rank_math_bulk_update_seo",
+      "ability": "gk-block-mcp/rank-math-bulk-update-seo",
+      "label": "Bulk-update Rank Math SEO metadata",
+      "description": "Update Rank Math SEO fields on multiple posts in one call. Response order matches request order.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "posts": {
+            "type": "array",
+            "description": "Array of objects, each with post_id and the fields to update.",
+            "items": {
+              "type": "object",
+              "properties": {
+                "post_id": {
+                  "type": "number",
+                  "description": "WordPress post or page ID."
+                },
+                "title": {
+                  "type": "string",
+                  "description": "SEO title. Supports Rank Math variables."
+                },
+                "description": {
+                  "type": "string",
+                  "description": "Meta description."
+                },
+                "focus_keyword": {
+                  "type": "string",
+                  "description": "Focus keyword(s), comma-separated."
+                },
+                "canonical": {
+                  "type": "string",
+                  "description": "Canonical URL override."
+                },
+                "robots": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Robots directives, e.g. index, noindex, nofollow, noarchive."
+                },
+                "og_title": {
+                  "type": "string",
+                  "description": "Open Graph (Facebook) title."
+                },
+                "og_description": {
+                  "type": "string",
+                  "description": "Open Graph (Facebook) description."
+                },
+                "twitter_title": {
+                  "type": "string",
+                  "description": "Twitter card title."
+                },
+                "twitter_description": {
+                  "type": "string",
+                  "description": "Twitter card description."
+                }
+              },
+              "required": [
+                "post_id"
+              ]
+            }
+          }
+        },
+        "required": [
+          "posts"
+        ]
+      },
+      "output_schema": {
+        "type": "object"
+      },
+      "permission": "edit_posts",
+      "annotations": {
+        "readonly": false,
+        "destructive": false,
+        "idempotent": true
+      }
     }
   ]
 }
